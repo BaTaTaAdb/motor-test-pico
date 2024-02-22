@@ -1,54 +1,39 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include "MiniMotor.h"
 
-class MiniMoto {
-public:
-    MiniMoto(byte addr); // Constructor
-
-    byte getFault();     // Get the fault status of the DRV8830 chip
-    void drive(int speed); // Control motor speed and direction
-    void stop();         // Stop the motor with high impedance
-    void brake();        // Brake the motor
-
-private:
-    byte _addr; // I2C address of the MiniMoto board
-
-    // Original low-level I2C methods (commented out)
-    // void I2CReadBytes(byte addr, byte *buffer, byte len);
-    // void I2CWriteBytes(byte addr, byte *buffer, byte len);
-
-    // New I2C methods using Wire library
-    void I2CReadBytes_Wire(byte addr, byte* buffer, byte len);
-    void I2CWriteBytes_Wire(byte addr, byte* buffer, byte len);
+MiniMotor::MiniMotor(TwoWire& wire, byte addr) : _wire(wire), _addr(addr) {
+    // Constructor body (if necessary) 
 };
 
-MiniMoto::MiniMoto(byte addr) {
-    _addr = addr;
-    Wire.begin(); // Initialize the Wire library
-}
+void MiniMotor::init() {
+    _wire.begin(); // Initialize the I2C bus here
+};
 
-void MiniMoto::I2CReadBytes_Wire(byte reg, byte* buffer, byte len) {
-    Wire.beginTransmission(_addr);
-    Wire.write(reg);
-    Wire.endTransmission();
+// I2C Read Bytes Method
+void MiniMotor::I2CReadBytes_Wire(byte reg, byte* buffer, byte len) {
+    _wire.beginTransmission(_addr);
+    _wire.write(reg);
+    _wire.endTransmission();
 
-    Wire.requestFrom((int)_addr, (int)len);
+    _wire.requestFrom((int)_addr, (int)len);
     for (byte i = 0; i < len; i++) {
-        if (Wire.available()) buffer[i] = Wire.read();
+        if (_wire.available()) buffer[i] = _wire.read();
     }
 }
 
-void MiniMoto::I2CWriteBytes_Wire(byte reg, byte* buffer, byte len) {
-    Wire.beginTransmission(_addr);
-    Wire.write(reg);
+// I2C Write Bytes Method
+void MiniMotor::I2CWriteBytes_Wire(byte reg, byte* buffer, byte len) {
+    _wire.beginTransmission(_addr);
+    _wire.write(reg);
     for (byte i = 0; i < len; i++) {
-        Wire.write(buffer[i]);
+        _wire.write(buffer[i]);
     }
-    Wire.endTransmission();
+    _wire.endTransmission();
 }
 
 // Return the fault status of the DRV8830 chip. Also clears any existing faults.
-byte MiniMoto::getFault() {
+byte MiniMotor::getFault() {
     byte buffer[1] = { 0 };
     byte clearFault = 0x80;
     I2CReadBytes_Wire(0x01, buffer, 1);
@@ -57,7 +42,7 @@ byte MiniMoto::getFault() {
 }
 
 // Send the drive command over I2C to the DRV8830 chip.
-void MiniMoto::drive(int speed) {
+void MiniMotor::drive(int speed) {
     byte regValue = 0x80; // Clear the fault status.
     I2CWriteBytes_Wire(0x01, &regValue, 1); // Clear the fault status.
 
@@ -72,13 +57,13 @@ void MiniMoto::drive(int speed) {
 }
 
 // Coast to a stop by hi-z'ing the drivers.
-void MiniMoto::stop() {
+void MiniMotor::stop() {
     byte regValue = 0; // See above for bit 1:0 explanation.
     I2CWriteBytes_Wire(0x00, &regValue, 1);
 }
 
 // Stop the motor by providing a heavy load on it.
-void MiniMoto::brake() {
+void MiniMotor::brake() {
     byte regValue = 0x03; // See above for bit 1:0 explanation.
     I2CWriteBytes_Wire(0x00, &regValue, 1);
 }

@@ -15,17 +15,25 @@ Code developed in Arduino 1.0.5, on a Fio classic board.
 ****************************************************************/
 
 #include "MiniMotor.h"  // Include the new MiniMoto header
+#include <Wire.h>
 
 // Create two MiniMoto instances, with different address settings.
-MiniMoto motor0(0xC4); // A1 = 1, A0 = clear
-MiniMoto motor1(0xC0); // A1 = 1, A0 = 1 (default)
+MiniMotor motor0(Wire1, 0x60); // A1 = 1, A0 = clear
+MiniMotor motor1(Wire1, 0x65); // A1 = 1, A0 = 1 (default)
 
 #define FAULTn  16     // Pin used for fault detection.
 
-void checkAndReportFault(MiniMoto& motor, int motorNumber);
+void checkAndReportFault(MiniMotor& motor, int motorNumber);
 void delayUntil(unsigned long elapsedTime);
 
 void setup() {
+    Wire1.setSDA(6);
+    Wire1.setSCL(7);
+    Wire1.begin(); // Initialize Wire1 with specific SDA and SCL pins
+
+    motor0.init(); // Initialize the motor0
+    motor1.init(); // Initialize the motor1
+
     Serial.begin(9600);
     Serial.println("Hello, world!");
     pinMode(FAULTn, INPUT);
@@ -35,7 +43,7 @@ void loop() {
     Serial.println("Forward!");
     motor0.drive(100);
     motor1.drive(100);
-    delayUntil(1000);
+    delayUntil(5000);
     Serial.println("Stop!");
     motor0.stop();
     motor1.stop();
@@ -43,7 +51,7 @@ void loop() {
     Serial.println("Reverse!");
     motor0.drive(-100);
     motor1.drive(-100);
-    delayUntil(1000);
+    delayUntil(5000);
     Serial.println("Brake!");
     motor0.brake();
     motor1.brake();
@@ -58,7 +66,7 @@ void delayUntil(unsigned long elapsedTime) {
     }
 }
 
-void checkAndReportFault(MiniMoto& motor, int motorNumber) {
+void checkAndReportFault(MiniMotor& motor, int motorNumber) {
     byte faultStatus = motor.getFault();
 
     if (faultStatus & FAULT) {

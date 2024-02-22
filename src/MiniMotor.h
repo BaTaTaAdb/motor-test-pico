@@ -10,19 +10,19 @@
 #define UVLO 0x04
 #define OCP 0x02
 
-class MiniMoto {
+class MiniMotor {
 public:
-    MiniMoto(byte addr); // Constructor
+    MiniMotor(TwoWire& wire, byte addr);
+    void init(); // New method to initialize the I2C bus
 
-    byte getFault();     // Get the fault status of the DRV8830 chip
-    void drive(int speed); // Control motor speed and direction
-    void stop();         // Stop the motor with high impedance
-    void brake();        // Brake the motor
+    byte getFault();
+    void drive(int speed);
+    void stop();
+    void brake();
 
 private:
-    byte _addr; // I2C address of the MiniMoto board
-
-    // I2C communication methods using Wire library
+    TwoWire& _wire;
+    byte _addr;
     void I2CReadBytes_Wire(byte reg, byte* buffer, byte len);
     void I2CWriteBytes_Wire(byte reg, byte* buffer, byte len);
 };
