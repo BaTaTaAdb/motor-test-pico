@@ -3,18 +3,10 @@ Example code demonstrating the use of the Arduino Library for
 the SparkFun MiniMoto board, which uses the TI DRV8830 IC for I2C
 low-voltage DC motor control.
 
-This code is beerware; if you use it, please buy me (or any other
-SparkFun employee) a cold beverage next time you run into one of
-us at the local.
-
-17 Sep 2013- Mike Hord, SparkFun Electronics
-
-Code developed in Arduino 1.0.5, on a Fio classic board.
-
-**Updated for Arduino 1.6.4 5/2015**
+Code developed in platformio version 6.1.13 for Raspberry pi Pico and compatible boards
 ****************************************************************/
 
-#include "MiniMotor.h"  // Include the new MiniMoto header
+#include "MiniMotor.h" 
 #include <Wire.h>
 
 // Create two MiniMoto instances, with different address settings.
